@@ -1,10 +1,13 @@
-build/
-devel/
-install/
-log/
+# ROS generated files
+big_taurus/build/
+big_taurus/devel/
+big_taurus/install/
+big_taurus/log/
 
+# Python generated files
+__pycache__/
+*.pyc
+
+# Node dependencies and secrets
 node_modules/
-**/node_modules/
-
 .env
-*.log
