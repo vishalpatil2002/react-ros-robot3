@@ -220,11 +220,11 @@ EXPOSE 3001
 # 19. Working directory
 # ============================================================
 
-WORKDIR /app
+WORKDIR /app11
 
 
 # ============================================================
 # 20. Start container
 # ============================================================
 
-CMD ["bash", "-c", "source /opt/ros/noetic/setup.bash && node /app/frontend-server.js & roscore & sleep 5; roslaunch rosbridge_server rosbridge_websocket.launch & cd /app/backend && npm start"]
+CMD ["bash", "-c", "source /opt/ros/noetic/setup.bash && cd /app/backend && npm install && node /app/frontend-server.js & roscore & sleep 5; roslaunch rosbridge_server rosbridge_websocket.launch & cd /app/backend && npm start"]

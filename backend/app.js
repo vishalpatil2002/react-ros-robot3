@@ -938,7 +938,7 @@ app.get("/check-mission-name", async (req, res) => {
   try {
     const mission = await collection_mission.findOne({
       "queueData.missionName": { $regex: `^${missionName}$`, $options: "i" },
-    });
+    })
     res.json({ exists: mission !== null });
   } catch (error) {
     console.error("Error checking mission name:", error);
