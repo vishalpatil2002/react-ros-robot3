@@ -99,7 +99,17 @@ RUN apt-get update && apt-get install -y \
     ros-noetic-libg2o \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+    
+    
+# ============================================================
+# ROS workspace
+# ============================================================
 
+WORKDIR /app/big_taurus
+
+COPY big_taurus/src/ /app/big_taurus/src/
+
+RUN bash -c "source /opt/ros/noetic/setup.bash && catkin_make"
 
 # ============================================================
 # 5. Python dependencies
@@ -138,47 +148,34 @@ RUN npm install -g \
     node-opcua
 
 
-# ============================================================
-# 8. Create application directory
-# ============================================================
-
-WORKDIR /app
-
-COPY frontend-server.js /app/frontend-server.js
-
-# ============================================================
-# 13. Copy backend package files
+## ============================================================
+# Frontend: install dependencies and build React
 # ============================================================
 
-COPY backend/package.json backend/package-lock.json /app/backend/
+WORKDIR /app/frontend
 
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY frontend/ ./
+RUN npm run build
 
 # ============================================================
-# 14. Install backend dependencies
+# Backend: install dependencies
 # ============================================================
 
 WORKDIR /app/backend
 
+COPY backend/package.json backend/package-lock.json ./
+
 RUN --mount=type=cache,target=/root/.npm \
     npm config set registry https://registry.npmjs.org/ \
-    && npm config set fetch-retries 10 \
-    && npm config set fetch-retry-mintimeout 30000 \
-    && npm config set fetch-retry-maxtimeout 300000 \
-    && npm config set fetch-timeout 1800000 \
     && npm ci --no-audit --no-fund --prefer-offline
-
-# ============================================================
-# 15. Copy complete backend source
-# ============================================================
 
 COPY backend/ /app/backend/
 
+COPY frontend-server.js /app/frontend-server.js
 
-#=============================================================
-# Copy React production build
-# ============================================================
-
-COPY frontend/build/ /app/frontend/build/
 
 # ============================================================
 # 16. Configure ROS environment
@@ -220,11 +217,11 @@ EXPOSE 3001
 # 19. Working directory
 # ============================================================
 
-WORKDIR /app11
+WORKDIR /app
 
 
 # ============================================================
 # 20. Start container
 # ============================================================
 
-CMD ["bash", "-c", "source /opt/ros/noetic/setup.bash && cd /app/backend && npm install && node /app/frontend-server.js & roscore & sleep 5; roslaunch rosbridge_server rosbridge_websocket.launch & cd /app/backend && npm start"]
+CMD ["bash", "-c", "source /opt/ros/noetic/setup.bash && node /app/frontend-server.js & roscore & sleep 5; roslaunch rosbridge_server rosbridge_websocket.launch & cd /app/backend && npm start"]
